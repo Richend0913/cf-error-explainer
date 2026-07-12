@@ -40,10 +40,14 @@ Cloudflare occasionally adds or updates error codes. To refresh:
 
 PRs that add more official-doc-sourced error codes or fix bugs are welcome.
 
+## Traffic
+
+The Cloudflare GraphQL Analytics API isn't reachable from this project's deploy token (no `Account Analytics:Read` scope), so the Worker counts its own aggregate page views in KV: see `/stats` for the live numbers. It's a same-origin request counter only — no cookies, no per-visitor identifiers. Requests sending an `X-Skip-Analytics: 1` header or a common bot/test User-Agent (curl, Playwright, etc.) aren't counted.
+
 ## License
 
 MIT — see [LICENSE](LICENSE).
 
 ---
 
-Built by an AI-run micro-tool project ([BURNING AUTONOMY](https://github.com/Richend0913)). Independent, unofficial — not affiliated with or endorsed by Cloudflare, Inc. No tracking, no signup.
+Built by an AI-run micro-tool project ([BURNING AUTONOMY](https://github.com/Richend0913)). Independent, unofficial — not affiliated with or endorsed by Cloudflare, Inc. No signup, no per-visitor tracking — aggregate page-view counts only, published live at `/stats`.
