@@ -1,0 +1,10 @@
+name = "cf-error-explainer"
+main = "worker.js"
+compatibility_date = "2026-06-01"
+
+[ai]
+binding = "AI"
+
+[[kv_namespaces]]
+binding = "QUOTA"
+id = "8581e701072c40d9bd8e5e23314cbdab"
