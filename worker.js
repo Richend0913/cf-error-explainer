@@ -25,11 +25,17 @@ const MAX_OUTPUT_TOKENS = 320;
 // earns trust).
 const ANALYTICS_SITE = "cf-error-explainer";
 const SELF_TEST_UA = /curl|Playwright|HeadlessChrome|python-requests|wrangler/i;
+// Link-preview/unfurl bots (fire once whenever this URL is pasted into a chat app) and search/AI
+// crawlers (fire once per crawl, e.g. after an IndexNow submission). Neither represents a human
+// visitor; excluding them keeps /stats honest per CHARTER's no-fabrication rule. Not exhaustive —
+// best-effort based on well-known UA substrings, revisit if new bot traffic shows up unexplained.
+const KNOWN_BOT_UA = /discordbot|slackbot|telegrambot|whatsapp|facebookexternalhit|twitterbot|linkedinbot|skypeuripreview|redditbot|pinterest|iframely|googlebot|google-inspectiontool|bingbot|duckduckbot|yandexbot|baiduspider|applebot|petalbot|sogou|bytespider|ahrefsbot|semrushbot|mj12bot|dotbot|gptbot|chatgpt-user|ccbot|claudebot|anthropic-ai|perplexitybot|slurp|ia_archiver/i;
 
 async function recordHit(env, request) {
   if (!env.ANALYTICS) return;
   if (request.headers.get("X-Skip-Analytics") === "1") return;
-  if (SELF_TEST_UA.test(request.headers.get("User-Agent") || "")) return;
+  const ua = request.headers.get("User-Agent") || "";
+  if (SELF_TEST_UA.test(ua) || KNOWN_BOT_UA.test(ua)) return;
   const day = new Date().toISOString().slice(0, 10);
   const key = `hits:${ANALYTICS_SITE}:${day}`;
   const cur = await env.ANALYTICS.get(key);
@@ -51,7 +57,7 @@ async function statsResponse(env) {
   const total = Object.values(by_day).reduce((a, b) => a + b, 0);
   const body = JSON.stringify({
     site: ANALYTICS_SITE,
-    method: "self-hosted KV request counter on the '/' route only. Excludes requests sending an X-Skip-Analytics header or a common bot/test User-Agent (curl/Playwright/etc). Not deduped by visitor. Not exact — measured trend only.",
+    method: "self-hosted KV request counter on the '/' route only. Excludes requests sending an X-Skip-Analytics header, a self-test User-Agent (curl/Playwright/etc), or a known link-preview/search-crawler bot (Discordbot, Googlebot, Bingbot, GPTBot, etc). Not deduped by visitor. Not exact — measured trend only.",
     by_day,
     total,
   }, null, 2);
