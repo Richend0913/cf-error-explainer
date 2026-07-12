@@ -16,6 +16,48 @@ const AI_MODEL = "@cf/meta/llama-3.1-8b-instruct-fp8-fast";
 const DAILY_AI_CALLS_CAP = 300;
 const MAX_OUTPUT_TOKENS = 320;
 
+// Self-hosted traffic counter (same pattern across all Track C tools). Built because the CF GraphQL
+// Analytics API is unreachable with the deploy-time wrangler OAuth token (no Account Analytics:Read
+// scope) — see track-c README/RUNLOG. Best-effort only: not deduped by visitor, no bot-detection beyond
+// a common-crawler/self-test User-Agent filter, and concurrent KV writes can undercount slightly
+// (eventual consistency). /stats is left public on purpose: publishing real measured numbers, even
+// small ones, is the point (STRATEGY.md — verifiable measured data is how an anonymous AI-run tool
+// earns trust).
+const ANALYTICS_SITE = "cf-error-explainer";
+const SELF_TEST_UA = /curl|Playwright|HeadlessChrome|python-requests|wrangler/i;
+
+async function recordHit(env, request) {
+  if (!env.ANALYTICS) return;
+  if (request.headers.get("X-Skip-Analytics") === "1") return;
+  if (SELF_TEST_UA.test(request.headers.get("User-Agent") || "")) return;
+  const day = new Date().toISOString().slice(0, 10);
+  const key = `hits:${ANALYTICS_SITE}:${day}`;
+  const cur = await env.ANALYTICS.get(key);
+  const n = (cur ? parseInt(cur, 10) || 0 : 0) + 1;
+  await env.ANALYTICS.put(key, String(n), { expirationTtl: 60 * 60 * 24 * 400 });
+}
+
+async function statsResponse(env) {
+  if (!env.ANALYTICS) {
+    return new Response(JSON.stringify({ error: "analytics not configured" }), { status: 503, headers: { "Content-Type": "application/json; charset=utf-8" } });
+  }
+  const list = await env.ANALYTICS.list({ prefix: `hits:${ANALYTICS_SITE}:` });
+  const by_day = {};
+  for (const k of list.keys) {
+    const day = k.name.split(":")[2];
+    const v = await env.ANALYTICS.get(k.name);
+    by_day[day] = parseInt(v, 10) || 0;
+  }
+  const total = Object.values(by_day).reduce((a, b) => a + b, 0);
+  const body = JSON.stringify({
+    site: ANALYTICS_SITE,
+    method: "self-hosted KV request counter on the '/' route only. Excludes requests sending an X-Skip-Analytics header or a common bot/test User-Agent (curl/Playwright/etc). Not deduped by visitor. Not exact — measured trend only.",
+    by_day,
+    total,
+  }, null, 2);
+  return new Response(body, { headers: { "Content-Type": "application/json; charset=utf-8" } });
+}
+
 // [code, title, meaning, causes[], fixes[], sourceUrl]
 const ERROR_DB = [
   ["500", "Internal Server Error", "A generic server-side error was returned (by the origin or Cloudflare itself), with no more specific code available.",
@@ -302,11 +344,15 @@ function buildPrompt(entry, userText, userCtx) {
 }
 
 export default {
-  async fetch(request, env) {
+  async fetch(request, env, execCtx) {
     const url = new URL(request.url);
 
     if (url.pathname === "/" || url.pathname === "") {
+      if (execCtx) execCtx.waitUntil(recordHit(env, request));
       return new Response(UI, { headers: { "Content-Type": "text/html; charset=utf-8" } });
+    }
+    if (url.pathname === "/stats") {
+      return statsResponse(env);
     }
     if (url.pathname === "/robots.txt") {
       return new Response(ROBOTS_TXT, { headers: { "Content-Type": "text/plain; charset=utf-8" } });
