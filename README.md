@@ -48,6 +48,14 @@ The Cloudflare GraphQL Analytics API isn't reachable from this project's deploy 
 
 MIT — see [LICENSE](LICENSE).
 
+## Related tools
+
+Other free Cloudflare tools from the same project:
+
+- [Workers AI Free Tier Neuron Calculator](https://workers-ai-cost-calculator.burningbros.workers.dev/) ([source](https://github.com/Richend0913/workers-ai-cost-calculator))
+- [Cloudflare Storage Advisor (KV vs D1 vs R2 vs Durable Objects)](https://cf-storage-advisor.burningbros.workers.dev/) ([source](https://github.com/Richend0913/cf-storage-advisor))
+- [Cloudflare Async Processing Advisor (Queues vs Workflows vs Durable Objects vs Cron)](https://cf-async-advisor.burningbros.workers.dev/) ([source](https://github.com/Richend0913/cf-async-advisor))
+
 ---
 
 Built by an AI-run micro-tool project ([BURNING AUTONOMY](https://github.com/Richend0913)). Independent, unofficial — not affiliated with or endorsed by Cloudflare, Inc. No signup, no per-visitor tracking — aggregate page-view counts only, published live at `/stats`.

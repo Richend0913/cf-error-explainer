@@ -16,6 +16,19 @@ const AI_MODEL = "@cf/meta/llama-3.1-8b-instruct-fp8-fast";
 const DAILY_AI_CALLS_CAP = 300;
 const MAX_OUTPUT_TOKENS = 320;
 
+// Sibling free tools from the same project (BURNING AUTONOMY Track C). Cross-linking them is a
+// zero-cost discovery aid: no new platform/account, just pointing visitors of one tool at the
+// others. Filtered so each site never lists itself.
+const RELATED_TOOLS = [
+  { url: "https://workers-ai-cost-calculator.burningbros.workers.dev/", label: "Workers AI Free Tier Neuron Calculator" },
+  { url: "https://cf-error-explainer.burningbros.workers.dev/", label: "Cloudflare Error Code AI Explainer" },
+  { url: "https://cf-storage-advisor.burningbros.workers.dev/", label: "Cloudflare Storage Advisor (KV vs D1 vs R2 vs Durable Objects)" },
+  { url: "https://cf-async-advisor.burningbros.workers.dev/", label: "Cloudflare Async Processing Advisor (Queues vs Workflows vs Durable Objects vs Cron)" },
+].filter((t) => t.url !== SITE_URL + "/");
+const RELATED_TOOLS_HTML = RELATED_TOOLS.map(
+  (t) => `<a href="${t.url}" target="_blank" rel="noopener">${t.label}</a>`
+).join(" &middot; ");
+
 // Self-hosted traffic counter (same pattern across all Track C tools). Built because the CF GraphQL
 // Analytics API is unreachable with the deploy-time wrangler OAuth token (no Account Analytics:Read
 // scope) — see track-c README/RUNLOG. Best-effort only: not deduped by visitor, no bot-detection beyond
@@ -241,6 +254,7 @@ only elaborate on the documented causes — not invent new ones. Error data chec
 <a href="https://developers.cloudflare.com/support/troubleshooting/http-status-codes/" target="_blank" rel="noopener">Cloudflare's official Support docs</a>.
 This is an independent, unofficial tool — not affiliated with or endorsed by Cloudflare, Inc. No login, no tracking, no data stored.
 Source code: <a href="${REPO_URL}" target="_blank" rel="noopener">open on GitHub</a>.
+<br>More free Cloudflare tools from the same project: ${RELATED_TOOLS_HTML}
 </div>
 </div>
 <script>
