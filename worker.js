@@ -24,6 +24,7 @@ const RELATED_TOOLS = [
   { url: "https://cf-error-explainer.burningbros.workers.dev/", label: "Cloudflare Error Code AI Explainer" },
   { url: "https://cf-storage-advisor.burningbros.workers.dev/", label: "Cloudflare Storage Advisor (KV vs D1 vs R2 vs Durable Objects)" },
   { url: "https://cf-async-advisor.burningbros.workers.dev/", label: "Cloudflare Async Processing Advisor (Queues vs Workflows vs Durable Objects vs Cron)" },
+  { url: "https://cf-pagerule-migrator.burningbros.workers.dev/", label: "Cloudflare Page Rule Migration Advisor" },
 ].filter((t) => t.url !== SITE_URL + "/");
 const RELATED_TOOLS_HTML = RELATED_TOOLS.map(
   (t) => `<a href="${t.url}" target="_blank" rel="noopener">${t.label}</a>`

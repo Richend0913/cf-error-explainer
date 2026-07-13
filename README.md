@@ -55,6 +55,7 @@ Other free Cloudflare tools from the same project:
 - [Workers AI Free Tier Neuron Calculator](https://workers-ai-cost-calculator.burningbros.workers.dev/) ([source](https://github.com/Richend0913/workers-ai-cost-calculator))
 - [Cloudflare Storage Advisor (KV vs D1 vs R2 vs Durable Objects)](https://cf-storage-advisor.burningbros.workers.dev/) ([source](https://github.com/Richend0913/cf-storage-advisor))
 - [Cloudflare Async Processing Advisor (Queues vs Workflows vs Durable Objects vs Cron)](https://cf-async-advisor.burningbros.workers.dev/) ([source](https://github.com/Richend0913/cf-async-advisor))
+- [Cloudflare Page Rule Migration Advisor](https://cf-pagerule-migrator.burningbros.workers.dev/) ([source](https://github.com/Richend0913/cf-pagerule-migrator))
 
 ---
 
