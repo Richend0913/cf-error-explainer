@@ -42,7 +42,7 @@ PRs that add more official-doc-sourced error codes or fix bugs are welcome.
 
 ## Traffic
 
-The Cloudflare GraphQL Analytics API isn't reachable from this project's deploy token (no `Account Analytics:Read` scope), so the Worker counts its own aggregate page views in KV: see `/stats` for the live numbers. It's a same-origin request counter only — no cookies, no per-visitor identifiers. Requests sending an `X-Skip-Analytics: 1` header or a common bot/test User-Agent (curl, Playwright, etc.) aren't counted.
+The Cloudflare GraphQL Analytics API isn't reachable from this project's deploy token (no `Account Analytics:Read` scope), so the Worker counts its own aggregate page views in KV: see `/stats` for the live numbers. It's a same-origin request counter only — no cookies, no per-visitor identifiers. Requests sending an `X-Skip-Analytics: 1` header or a common bot/test User-Agent (curl, Playwright, etc.) aren't counted. `/stats` also publishes up to 20 deduped raw `User-Agent` strings per day (no IP, no cookies) for hits that passed the bot filter, so an unexplained non-zero day can be checked against known bot signatures instead of assumed to be human traffic.
 
 ## License
 
