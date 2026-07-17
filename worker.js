@@ -55,6 +55,16 @@ async function recordHit(env, request) {
   const cur = await env.ANALYTICS.get(key);
   const n = (cur ? parseInt(cur, 10) || 0 : 0) + 1;
   await env.ANALYTICS.put(key, String(n), { expirationTtl: 60 * 60 * 24 * 400 });
+  // Sample raw UA strings (capped, no IP/cookies/PII) for hits that pass the filters above, so a
+  // future unexplained non-zero day can be diagnosed: new bot type KNOWN_BOT_UA missed, or a
+  // real visitor. Deduped per day to keep the sample small and useful.
+  const uaKey = `ua_sample:${ANALYTICS_SITE}:${day}`;
+  const uaCur = await env.ANALYTICS.get(uaKey, "json");
+  const samples = Array.isArray(uaCur) ? uaCur : [];
+  if (ua && samples.length < 20 && !samples.includes(ua)) {
+    samples.push(ua.slice(0, 200));
+    await env.ANALYTICS.put(uaKey, JSON.stringify(samples), { expirationTtl: 60 * 60 * 24 * 400 });
+  }
 }
 
 async function statsResponse(env) {
@@ -69,11 +79,19 @@ async function statsResponse(env) {
     by_day[day] = parseInt(v, 10) || 0;
   }
   const total = Object.values(by_day).reduce((a, b) => a + b, 0);
+  const uaList = await env.ANALYTICS.list({ prefix: `ua_sample:${ANALYTICS_SITE}:` });
+  const ua_samples = {};
+  for (const k of uaList.keys) {
+    const day = k.name.split(":")[2];
+    const v = await env.ANALYTICS.get(k.name, "json");
+    if (v) ua_samples[day] = v;
+  }
   const body = JSON.stringify({
     site: ANALYTICS_SITE,
     method: "self-hosted KV request counter on the '/' route only. Excludes requests sending an X-Skip-Analytics header, a self-test User-Agent (curl/Playwright/etc), or a known link-preview/search-crawler bot (Discordbot, Googlebot, Bingbot, GPTBot, etc). Not deduped by visitor. Not exact — measured trend only.",
     by_day,
     total,
+    ua_samples,
   }, null, 2);
   return new Response(body, { headers: { "Content-Type": "application/json; charset=utf-8" } });
 }
